@@ -4,7 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import type { Player } from "@/lib/game/types";
+import type { Player, ScoreSnapshot } from "@/lib/game/types";
 import type { GameApi } from "@/lib/game/use-game-state";
 import { autoSplitPot, validateManualAlloc } from "@/lib/game/calculations";
 import { NumberStepper } from "@/components/mahjong/shared/number-stepper";
@@ -55,8 +55,8 @@ export function PotSplitPanel({
   players: Player[];
   manualAlloc: Record<string, number>;
   manualSum: number;
-  beforePotSplit: unknown;
-  beforeMultiply: unknown;
+  beforePotSplit: ScoreSnapshot | null;
+  beforeMultiply: ScoreSnapshot | null;
   onManualAllocChange: (playerId: string, n: number) => void;
   onClearManualAlloc: () => void;
   onAutoSplit: GameApi["runAutoSplit"];

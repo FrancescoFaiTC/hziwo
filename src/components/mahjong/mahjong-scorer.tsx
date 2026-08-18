@@ -12,19 +12,22 @@ import { TableTab } from "@/components/mahjong/table-tab/table-tab";
 import { EndTab } from "@/components/mahjong/end-tab/end-tab";
 import { ResetGameDialog } from "@/components/mahjong/end-tab/reset-game-dialog";
 import { BottomTabs, type TabId } from "@/components/mahjong/bottom-tabs";
+import { SettingsTab } from "@/components/mahjong/settings-tab/settings-tab";
 import { validateRoundDeltas } from "@/lib/game/calculations";
+import { useUiScale } from "@/lib/ui-scale";
 import {
   ScoreChangeConfirmDialog,
   type ScoreChangeRow,
 } from "@/components/mahjong/shared/score-change-confirm-dialog";
 
 export function MahjongScorer({ game }: { game: GameApi }) {
+  const uiScale = useUiScale();
   const { state, hydrated } = game;
   const isPlaying = state.phase === "playing";
   const isEndgame = state.phase === "endgame";
-  const seatedCount = state.players.filter((p) => p.atTable).length;
   const seated = state.players.filter((p) => p.atTable);
   const bench = state.players.filter((p) => !p.atTable);
+  const seatedCount = seated.length;
 
   const [tab, setTab] = useState<TabId>("round");
   const [name, setName] = useState("");
@@ -132,99 +135,104 @@ export function MahjongScorer({ game }: { game: GameApi }) {
 
   return (
     <div className="app-shell mx-auto flex h-full max-h-dvh w-full max-w-lg flex-col overflow-hidden md:max-w-2xl">
-      <AppHeader
-        isEndgame={isEndgame}
-        seatedCount={seatedCount}
-        lastMultiplier={state.lastMultiplier}
-        pot={state.pot}
-        rounds={state.rounds}
-        players={state.players}
-        onDeleteRound={game.deleteRound}
-      />
-
-      <ScoreStage
-        players={state.players}
-        seated={seated}
-        bench={bench}
-      />
-
       <Tabs
         value={tab}
         onValueChange={(v) => setTab(v as TabId)}
         className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden"
       >
-        <div className="min-h-0 flex-1 overflow-hidden px-1">
-          <TabsContent
-            value="round"
-            className="flex h-full min-h-0 flex-col data-[hidden]:hidden"
-          >
-            <RoundTab
-              isPlaying={isPlaying}
-              players={state.players}
-              pot={state.pot}
-              potDelta={potDelta}
-              deltas={deltas}
-              totalSum={totalSum}
-              recordRound={recordRound}
-              canUndo={!!state.lastRoundUndo}
-              onPotDeltaChange={setPotDelta}
-              onDeltaChange={(playerId, n) =>
-                setDeltas((prev) => ({ ...prev, [playerId]: n }))
-              }
-              onRecordRoundChange={setRecordRound}
-              onUndo={undoLastRound}
-              onSettle={openConfirm}
-              onGoEnd={() => setTab("end")}
-              onGoTable={() => setTab("table")}
-            />
-          </TabsContent>
+        <div className="ui-scale flex min-h-0 flex-1 flex-col overflow-hidden">
+          <AppHeader
+            isEndgame={isEndgame}
+            seatedCount={seatedCount}
+            lastMultiplier={state.lastMultiplier}
+            pot={state.pot}
+            rounds={state.rounds}
+            players={state.players}
+            onDeleteRound={game.deleteRound}
+          />
 
-          <TabsContent
-            value="table"
-            className="flex h-full min-h-0 flex-col data-[hidden]:hidden"
-          >
-            <TableTab
-              isPlaying={isPlaying}
-              players={state.players}
-              seatedCount={seatedCount}
-              name={name}
-              initialScore={initialScore}
-              onNameChange={setName}
-              onInitialScoreChange={setInitialScore}
-              onToggleAtTable={game.toggleAtTable}
-              onAddPlayer={game.addPlayer}
-            />
-          </TabsContent>
+          <ScoreStage seated={seated} bench={bench} />
 
-          <TabsContent
-            value="end"
-            className="flex h-full min-h-0 flex-col data-[hidden]:hidden"
-          >
-            <EndTab
-              isPlaying={isPlaying}
-              isEndgame={isEndgame}
-              pot={state.pot}
-              players={state.players}
-              manualAlloc={manualAlloc}
-              manualSum={manualSum}
-              multiplier={multiplier}
-              beforePotSplit={state.beforePotSplit}
-              beforeMultiply={state.beforeMultiply}
-              onEnterEndgame={game.enterEndgame}
-              onReturnToPlaying={game.returnToPlaying}
-              onOpenReset={() => setResetOpen(true)}
-              onManualAllocChange={(playerId, n) =>
-                setManualAlloc((prev) => ({ ...prev, [playerId]: n }))
-              }
-              onClearManualAlloc={() => setManualAlloc({})}
-              onMultiplierChange={setMultiplier}
-              onAutoSplit={game.runAutoSplit}
-              onRollbackPotSplit={game.rollbackPotSplit}
-              onManualSplitPot={game.manualSplitPot}
-              onApplyMultiplier={game.applyMultiplier}
-              onRollbackMultiplier={game.rollbackMultiplier}
-            />
-          </TabsContent>
+          <div className="min-h-0 flex-1 overflow-hidden px-1">
+            <TabsContent
+              value="round"
+              className="flex h-full min-h-0 flex-col data-[hidden]:hidden"
+            >
+              <RoundTab
+                isPlaying={isPlaying}
+                players={[...seated, ...bench]}
+                pot={state.pot}
+                potDelta={potDelta}
+                deltas={deltas}
+                totalSum={totalSum}
+                recordRound={recordRound}
+                canUndo={!!state.lastRoundUndo}
+                onPotDeltaChange={setPotDelta}
+                onDeltaChange={(playerId, n) =>
+                  setDeltas((prev) => ({ ...prev, [playerId]: n }))
+                }
+                onRecordRoundChange={setRecordRound}
+                onUndo={undoLastRound}
+                onSettle={openConfirm}
+                onGoEnd={() => setTab("end")}
+                onGoTable={() => setTab("table")}
+              />
+            </TabsContent>
+
+            <TabsContent
+              value="table"
+              className="flex h-full min-h-0 flex-col data-[hidden]:hidden"
+            >
+              <TableTab
+                isPlaying={isPlaying}
+                players={state.players}
+                seatedCount={seatedCount}
+                name={name}
+                initialScore={initialScore}
+                onNameChange={setName}
+                onInitialScoreChange={setInitialScore}
+                onToggleAtTable={game.toggleAtTable}
+                onAddPlayer={game.addPlayer}
+              />
+            </TabsContent>
+
+            <TabsContent
+              value="end"
+              className="flex h-full min-h-0 flex-col data-[hidden]:hidden"
+            >
+              <EndTab
+                isPlaying={isPlaying}
+                isEndgame={isEndgame}
+                pot={state.pot}
+                players={state.players}
+                manualAlloc={manualAlloc}
+                manualSum={manualSum}
+                multiplier={multiplier}
+                beforePotSplit={state.beforePotSplit}
+                beforeMultiply={state.beforeMultiply}
+                onEnterEndgame={game.enterEndgame}
+                onReturnToPlaying={game.returnToPlaying}
+                onOpenReset={() => setResetOpen(true)}
+                onManualAllocChange={(playerId, n) =>
+                  setManualAlloc((prev) => ({ ...prev, [playerId]: n }))
+                }
+                onClearManualAlloc={() => setManualAlloc({})}
+                onMultiplierChange={setMultiplier}
+                onAutoSplit={game.runAutoSplit}
+                onRollbackPotSplit={game.rollbackPotSplit}
+                onManualSplitPot={game.manualSplitPot}
+                onApplyMultiplier={game.applyMultiplier}
+                onRollbackMultiplier={game.rollbackMultiplier}
+              />
+            </TabsContent>
+
+            <TabsContent
+              value="settings"
+              className="flex h-full min-h-0 flex-col data-[hidden]:hidden"
+            >
+              <SettingsTab uiScale={uiScale} />
+            </TabsContent>
+          </div>
         </div>
 
         <BottomTabs />

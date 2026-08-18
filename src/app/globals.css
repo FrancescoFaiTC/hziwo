@@ -59,6 +59,7 @@
 
 :root {
   /* 统一水墨纸感：暖纸底 + 墨色字 + 朱红点缀 + 淡青净胜 */
+  --ui-scale: 1;
   --ink: oklch(0.28 0.02 55);
   --ink-soft: oklch(0.45 0.02 55);
   --paper: oklch(0.97 0.012 90);
@@ -117,6 +118,18 @@
 }
 
 @layer utilities {
+  /* 内容区等比缩放；底栏与遮罩层不套此 class */
+  .ui-scale {
+    zoom: var(--ui-scale);
+  }
+
+  /* 弹层内容与 Toast 跟随缩放（overlay 不缩放，避免底部留空） */
+  [data-slot="dialog-content"],
+  [data-slot="sheet-content"],
+  [data-sonner-toaster] {
+    zoom: var(--ui-scale);
+  }
+
   .app-shell {
     background:
       radial-gradient(

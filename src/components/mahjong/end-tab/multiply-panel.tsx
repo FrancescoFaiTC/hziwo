@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import type { Player } from "@/lib/game/types";
+import type { Player, ScoreSnapshot } from "@/lib/game/types";
 import type { GameApi } from "@/lib/game/use-game-state";
 import { NumberStepper } from "@/components/mahjong/shared/number-stepper";
 import {
@@ -25,7 +25,7 @@ export function MultiplyPanel({
   pot: number;
   players: Player[];
   multiplier: number;
-  beforeMultiply: unknown;
+  beforeMultiply: ScoreSnapshot | null;
   onMultiplierChange: (n: number) => void;
   onApply: GameApi["applyMultiplier"];
   onRollback: GameApi["rollbackMultiplier"];

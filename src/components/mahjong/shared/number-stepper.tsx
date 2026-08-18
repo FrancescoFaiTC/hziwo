@@ -24,21 +24,37 @@ function parseDraft(raw: string): number | null {
   return Math.trunc(n);
 }
 
-function clampMin(n: number, min?: number) {
-  if (min !== undefined && n < min) return min;
-  return n;
+function clampRange(n: number, min?: number, max?: number) {
+  let next = n;
+  if (min !== undefined && next < min) next = min;
+  if (max !== undefined && next > max) next = max;
+  return next;
+}
+
+function snapToStep(n: number, min?: number, max?: number, step = 1) {
+  let next = clampRange(n, min, max);
+  if (step > 1) {
+    const base = min ?? 0;
+    next = Math.round((next - base) / step) * step + base;
+    next = clampRange(next, min, max);
+  }
+  return next;
 }
 
 export function NumberStepper({
   value,
   onChange,
   min,
+  max,
+  step = 1,
   disabled,
   signed = true,
 }: {
   value: number;
   onChange: (n: number) => void;
   min?: number;
+  max?: number;
+  step?: number;
   disabled?: boolean;
   /** false = plain integer (e.g. multiplier), no leading + */
   signed?: boolean;
@@ -46,16 +62,18 @@ export function NumberStepper({
   const [draft, setDraft] = useState<string | null>(null);
   const editing = draft !== null;
   const display = editing ? draft : formatIdle(value, signed);
+  const atMin = min !== undefined && value <= min;
+  const atMax = max !== undefined && value >= max;
 
   function commitDraft(raw: string) {
     const parsed = parseDraft(raw);
     setDraft(null);
     if (parsed === null) return;
-    onChange(clampMin(parsed, min));
+    onChange(snapToStep(parsed, min, max, step));
   }
 
-  function step(next: number) {
-    const clamped = clampMin(next, min);
+  function stepBy(delta: number) {
+    const clamped = snapToStep(value + delta, min, max, step);
     if (editing) setDraft(String(clamped));
     onChange(clamped);
   }
@@ -67,8 +85,8 @@ export function NumberStepper({
         variant="outline"
         size="icon"
         className="size-11 shrink-0 rounded-md bg-card/80 sm:size-9"
-        disabled={disabled || (min !== undefined && value <= min)}
-        onClick={() => step(value - 1)}
+        disabled={disabled || atMin}
+        onClick={() => stepBy(-step)}
         aria-label="减少"
       >
         <MinusIcon className="size-3.5" />
@@ -95,7 +113,12 @@ export function NumberStepper({
             setDraft(raw);
             return;
           }
-          const next = clampMin(parsed, min);
+          // 输入中低于 min 时先保留草稿（如从空打到 100），失焦再吸附
+          if (min !== undefined && parsed < min) {
+            setDraft(raw);
+            return;
+          }
+          const next = max !== undefined ? Math.min(parsed, max) : parsed;
           setDraft(String(next));
           onChange(next);
         }}
@@ -113,8 +136,8 @@ export function NumberStepper({
         variant="outline"
         size="icon"
         className="size-11 shrink-0 rounded-md bg-card/80 sm:size-9"
-        disabled={disabled}
-        onClick={() => step(value + 1)}
+        disabled={disabled || atMax}
+        onClick={() => stepBy(step)}
         aria-label="增加"
       >
         <PlusIcon className="size-3.5" />

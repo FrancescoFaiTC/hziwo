@@ -15,15 +15,15 @@ export function SeatedPlayerCard({
   const diff = player.score - player.initialScore;
   return (
     <div
-      className="seat-chip seat-active animate-rise flex aspect-square min-w-0 flex-1 flex-col items-center justify-center gap-2 rounded-md px-2 pt-2 pb-2.5"
+      className="seat-active animate-rise flex h-[4.5rem] min-w-0 flex-col items-center justify-center gap-1 rounded-md px-1.5"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      <span className="max-w-full truncate text-center text-[13px] font-medium tracking-wide text-ink-soft">
+      <span className="max-w-full truncate text-center text-[11px] font-medium tracking-wide text-ink-soft">
         {player.name}
       </span>
       <span
         className={cn(
-          "font-mono text-[1.7rem] leading-none font-semibold tracking-tight tabular-nums",
+          "max-w-full truncate font-mono text-base leading-none font-semibold tracking-tight tabular-nums sm:text-lg",
           diff === 0 ? "text-ink" : diffTone(diff)
         )}
       >

@@ -44,10 +44,6 @@ export function RoundTab({
   onGoEnd: () => void;
   onGoTable: () => void;
 }) {
-  const orderedPlayers = [
-    ...players.filter((p) => p.atTable),
-    ...players.filter((p) => !p.atTable),
-  ];
   if (!isPlaying) {
     return (
       <EmptyHint
@@ -104,7 +100,7 @@ export function RoundTab({
             potDelta={potDelta}
             onChange={onPotDeltaChange}
           />
-          {orderedPlayers.map((p) => (
+          {players.map((p) => (
             <ScoreEntryRow
               key={p.id}
               player={p}

@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Player } from "@/lib/game/types";
+import type { Player, ScoreSnapshot } from "@/lib/game/types";
 import type { GameApi } from "@/lib/game/use-game-state";
 import { PotSplitPanel } from "./pot-split-panel";
 import { MultiplyPanel } from "./multiply-panel";
@@ -38,8 +38,8 @@ export function EndTab({
   manualAlloc: Record<string, number>;
   manualSum: number;
   multiplier: number;
-  beforePotSplit: unknown;
-  beforeMultiply: unknown;
+  beforePotSplit: ScoreSnapshot | null;
+  beforeMultiply: ScoreSnapshot | null;
   onEnterEndgame: GameApi["enterEndgame"];
   onReturnToPlaying: GameApi["returnToPlaying"];
   onOpenReset: () => void;
