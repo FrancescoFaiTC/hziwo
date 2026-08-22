@@ -15,7 +15,6 @@ export function EndTab({
   pot,
   players,
   manualAlloc,
-  manualSum,
   multiplier,
   beforePotSplit,
   beforeMultiply,
@@ -36,7 +35,6 @@ export function EndTab({
   pot: number;
   players: Player[];
   manualAlloc: Record<string, number>;
-  manualSum: number;
   multiplier: number;
   beforePotSplit: ScoreSnapshot | null;
   beforeMultiply: ScoreSnapshot | null;
@@ -103,7 +101,6 @@ export function EndTab({
               pot={pot}
               players={players}
               manualAlloc={manualAlloc}
-              manualSum={manualSum}
               beforePotSplit={beforePotSplit}
               beforeMultiply={beforeMultiply}
               onManualAllocChange={onManualAllocChange}

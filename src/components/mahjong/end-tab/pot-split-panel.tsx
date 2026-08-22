@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,6 @@ export function PotSplitPanel({
   pot,
   players,
   manualAlloc,
-  manualSum,
   beforePotSplit,
   beforeMultiply,
   onManualAllocChange,
@@ -54,7 +53,6 @@ export function PotSplitPanel({
   pot: number;
   players: Player[];
   manualAlloc: Record<string, number>;
-  manualSum: number;
   beforePotSplit: ScoreSnapshot | null;
   beforeMultiply: ScoreSnapshot | null;
   onManualAllocChange: (playerId: string, n: number) => void;
@@ -68,6 +66,10 @@ export function PotSplitPanel({
     null
   );
   const [previewRows, setPreviewRows] = useState<ScoreChangeRow[]>([]);
+  const manualSum = useMemo(
+    () => players.reduce((s, p) => s + (manualAlloc[p.id] ?? 0), 0),
+    [players, manualAlloc]
+  );
 
   const busy = !!beforeMultiply || pot < 1;
 

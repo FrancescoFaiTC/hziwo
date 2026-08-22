@@ -1,11 +1,11 @@
 import type { Player } from "./types";
 import { formatSignedScore } from "./format-signed-score";
 
-export type ActionCheck =
+type ActionCheck =
   | { ok: true }
   | { ok: false; error: string };
 
-export type RoundDeltaCheck =
+type RoundDeltaCheck =
   | { ok: true; normalized: Record<string, number> }
   | { ok: false; error: string };
 

@@ -9,7 +9,6 @@ import { AddPlayerForm } from "./add-player-form";
 export function TableTab({
   isPlaying,
   players,
-  seatedCount,
   name,
   initialScore,
   onNameChange,
@@ -19,7 +18,6 @@ export function TableTab({
 }: {
   isPlaying: boolean;
   players: Player[];
-  seatedCount: number;
   name: string;
   initialScore: number;
   onNameChange: (name: string) => void;
@@ -41,7 +39,6 @@ export function TableTab({
           <AddPlayerForm
             name={name}
             initialScore={initialScore}
-            seatedCount={seatedCount}
             onNameChange={onNameChange}
             onInitialScoreChange={onInitialScoreChange}
             onAdd={onAddPlayer}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 
 const UI_SCALE_STORAGE_KEY = "hziwo-ui-scale";
 
@@ -41,24 +41,14 @@ function persistScale(scale: number) {
   }
 }
 
-const subscribeNoop = () => () => {};
-
 export function useUiScale() {
-  const isClient = useSyncExternalStore(
-    subscribeNoop,
-    () => true,
-    () => false
-  );
   const [scale, setScaleState] = useState(UI_SCALE_DEFAULT);
-  const [hydrated, setHydrated] = useState(false);
 
-  // 客户端渲染期灌入已保存缩放，避免 effect 闪一下 100%
-  if (isClient && !hydrated) {
+  useLayoutEffect(() => {
     const next = readStoredScale();
     setScaleState(next);
     persistScale(next);
-    setHydrated(true);
-  }
+  }, []);
 
   const setScale = useCallback((next: number) => {
     const clamped = clampScale(next);
@@ -76,5 +66,3 @@ export function useUiScale() {
     reset,
   };
 }
-
-export type UiScaleApi = ReturnType<typeof useUiScale>;

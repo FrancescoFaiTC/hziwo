@@ -3,8 +3,8 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useState,
-  useSyncExternalStore,
 } from "react";
 import {
   createInitialState,
@@ -22,10 +22,7 @@ import {
   validateManualAlloc,
   validateRoundDeltas,
 } from "./calculations";
-
-function uid(): string {
-  return crypto.randomUUID();
-}
+import { createPlayerId } from "./create-player-id";
 
 function snapshotOf(state: Pick<GameState, "players" | "pot">): ScoreSnapshot {
   return {
@@ -51,9 +48,7 @@ function loadState(): GameState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return createInitialState();
-    const parsed = JSON.parse(raw) as Partial<GameState> & {
-      pendingRound?: unknown;
-    };
+    const parsed = JSON.parse(raw) as Partial<GameState>;
     if (parsed?.version !== 1) return createInitialState();
 
     const phase = parsed.phase === "endgame" ? "endgame" : "playing";
@@ -103,29 +98,25 @@ function loadState(): GameState {
 }
 
 type ActionResult =
-  | { ok: true; message?: string }
+  | { ok: true; message?: string; atTable?: boolean }
   | { ok: false; error: string };
 
-const subscribeNoop = () => () => {};
-
 export function useGameState() {
-  const isClient = useSyncExternalStore(
-    subscribeNoop,
-    () => true,
-    () => false
-  );
   const [state, setState] = useState<GameState>(createInitialState);
   const [hydrated, setHydrated] = useState(false);
 
-  // 客户端挂载后在渲染期灌入 localStorage，避免 effect 内同步 setState
-  if (isClient && !hydrated) {
+  useLayoutEffect(() => {
     setState(loadState());
     setHydrated(true);
-  }
+  }, []);
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // 固定站点 / 隐私模式等可能禁止写入，不应导致整页崩溃
+    }
   }, [state, hydrated]);
 
   const addPlayer = useCallback(
@@ -134,6 +125,13 @@ export function useGameState() {
       if (!trimmed) return { ok: false, error: "请填写玩家名字" };
       if (!Number.isInteger(initialScore)) {
         return { ok: false, error: "初始积分须为整数" };
+      }
+
+      let newId: string;
+      try {
+        newId = createPlayerId();
+      } catch {
+        return { ok: false, error: "无法创建玩家，请重试" };
       }
 
       let result: ActionResult = { ok: true };
@@ -146,16 +144,18 @@ export function useGameState() {
           return prev;
         }
         const seated = prev.players.filter((p) => p.atTable).length;
+        const atTable = seated < MAX_AT_TABLE;
+        result = { ok: true, atTable };
         return {
           ...prev,
           players: [
             ...prev.players,
             {
-              id: uid(),
+              id: newId,
               name: trimmed,
               initialScore,
               score: initialScore,
-              atTable: seated < MAX_AT_TABLE,
+              atTable,
             },
           ],
         };
@@ -217,7 +217,7 @@ export function useGameState() {
         }
         const { normalized } = check;
         const before = snapshotOf(prev);
-        const roundId = record ? uid() : null;
+        const roundId = record ? createPlayerId() : null;
         const players = prev.players.map((p) => ({
           ...p,
           score: p.score + (normalized[p.id] ?? 0),

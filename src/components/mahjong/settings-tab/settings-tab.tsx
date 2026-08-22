@@ -9,7 +9,7 @@ import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,
   UI_SCALE_STEP,
-  type UiScaleApi,
+  useUiScale,
 } from "@/lib/ui-scale";
 
 const PERCENT_MIN = Math.round(UI_SCALE_MIN * 100);
@@ -17,7 +17,9 @@ const PERCENT_MAX = Math.round(UI_SCALE_MAX * 100);
 const PERCENT_STEP = Math.round(UI_SCALE_STEP * 100);
 const PERCENT_DEFAULT = Math.round(UI_SCALE_DEFAULT * 100);
 
-export function SettingsTab({ uiScale }: { uiScale: UiScaleApi }) {
+export function SettingsTab() {
+  const uiScale = useUiScale();
+
   return (
     <ScrollArea className="min-h-0 flex-1 px-3">
       <div className="space-y-4 py-2">

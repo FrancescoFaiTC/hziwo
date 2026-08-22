@@ -14,14 +14,12 @@ import { ResetGameDialog } from "@/components/mahjong/end-tab/reset-game-dialog"
 import { BottomTabs, type TabId } from "@/components/mahjong/bottom-tabs";
 import { SettingsTab } from "@/components/mahjong/settings-tab/settings-tab";
 import { validateRoundDeltas } from "@/lib/game/calculations";
-import { useUiScale } from "@/lib/ui-scale";
 import {
   ScoreChangeConfirmDialog,
   type ScoreChangeRow,
 } from "@/components/mahjong/shared/score-change-confirm-dialog";
 
 export function MahjongScorer({ game }: { game: GameApi }) {
-  const uiScale = useUiScale();
   const { state, hydrated } = game;
   const isPlaying = state.phase === "playing";
   const isEndgame = state.phase === "endgame";
@@ -46,11 +44,6 @@ export function MahjongScorer({ game }: { game: GameApi }) {
     [state.players, deltas, potDelta]
   );
 
-  const manualSum = useMemo(
-    () => state.players.reduce((s, p) => s + (manualAlloc[p.id] ?? 0), 0),
-    [state.players, manualAlloc]
-  );
-
   const settleRows = useMemo((): ScoreChangeRow[] => {
     const rows: ScoreChangeRow[] = [];
     if (potDelta !== 0) {
@@ -63,18 +56,6 @@ export function MahjongScorer({ game }: { game: GameApi }) {
       });
     }
     for (const p of state.players) {
-      if (!p.atTable) continue;
-      const d = deltas[p.id] ?? 0;
-      if (d === 0) continue;
-      rows.push({
-        id: p.id,
-        label: p.name,
-        from: p.score,
-        to: p.score + d,
-      });
-    }
-    for (const p of state.players) {
-      if (p.atTable) continue;
       const d = deltas[p.id] ?? 0;
       if (d === 0) continue;
       rows.push({
@@ -186,7 +167,6 @@ export function MahjongScorer({ game }: { game: GameApi }) {
               <TableTab
                 isPlaying={isPlaying}
                 players={state.players}
-                seatedCount={seatedCount}
                 name={name}
                 initialScore={initialScore}
                 onNameChange={setName}
@@ -206,7 +186,6 @@ export function MahjongScorer({ game }: { game: GameApi }) {
                 pot={state.pot}
                 players={state.players}
                 manualAlloc={manualAlloc}
-                manualSum={manualSum}
                 multiplier={multiplier}
                 beforePotSplit={state.beforePotSplit}
                 beforeMultiply={state.beforeMultiply}
@@ -230,7 +209,7 @@ export function MahjongScorer({ game }: { game: GameApi }) {
               value="settings"
               className="flex h-full min-h-0 flex-col data-[hidden]:hidden"
             >
-              <SettingsTab uiScale={uiScale} />
+              <SettingsTab />
             </TabsContent>
           </div>
         </div>
